@@ -1,5 +1,5 @@
- -- LocalScript: Teleport + Reset loop with ON/OFF GUI button (Mobile)
--- Plus Bomb Spam button
+-- LocalScript: Teleport + Reset loop with ON/OFF GUI button (Mobile)
+-- Plus Bomb spam + Purchase farm button
 -- Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -16,7 +16,9 @@ local RESET_DELAY = 0.05
 -- State
 local tpEnabled = false
 local bombEnabled = false
+local farmEnabled = false
 local bombConn
+local farmConn
 
 -- GUI Setup
 local screenGui = Instance.new("ScreenGui")
@@ -26,7 +28,7 @@ screenGui.Parent = PlayerGui
 -- Teleport button
 local tpButton = Instance.new("TextButton")
 tpButton.Size = UDim2.new(0, 100, 0, 40)
-tpButton.Position = UDim2.new(0.05, 0, 0.75, 0) -- slightly higher
+tpButton.Position = UDim2.new(0.05, 0, 0.65, 0) -- higher
 tpButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 tpButton.TextScaled = true
@@ -36,12 +38,22 @@ tpButton.Parent = screenGui
 -- Bomb button
 local bombButton = Instance.new("TextButton")
 bombButton.Size = UDim2.new(0, 100, 0, 40)
-bombButton.Position = UDim2.new(0.05, 0, 0.85, 0) -- just below
+bombButton.Position = UDim2.new(0.05, 0, 0.75, 0)
 bombButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 bombButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 bombButton.TextScaled = true
 bombButton.Text = "BOMB OFF"
 bombButton.Parent = screenGui
+
+-- Farm button
+local farmButton = Instance.new("TextButton")
+farmButton.Size = UDim2.new(0, 100, 0, 40)
+farmButton.Position = UDim2.new(0.05, 0, 0.85, 0)
+farmButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+farmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmButton.TextScaled = true
+farmButton.Text = "FARM OFF"
+farmButton.Parent = screenGui
 
 -- Teleport to target
 local function teleport(character)
@@ -83,8 +95,6 @@ tpButton.MouseButton1Click:Connect(function()
 	if tpEnabled then
 		tpButton.Text = "TP ON"
 		tpButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-
-		-- Reset immediately when turning ON
 		if lp.Character then
 			doCycle(lp.Character)
 		end
@@ -94,23 +104,20 @@ tpButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Bomb spam function
+-- Bomb spam
 local function startBombSpam()
 	if bombConn then bombConn:Disconnect() end
-	local remote = ReplicatedStorage:WaitForChild("PlantBomb")
+	local bombRemote = ReplicatedStorage:WaitForChild("PlantBomb")
 	bombConn = RunService.Heartbeat:Connect(function()
 		if bombEnabled then
-			remote:FireServer()
+			bombRemote:FireServer()
 		end
 	end)
 end
-
 local function stopBombSpam()
 	if bombConn then bombConn:Disconnect() end
 	bombConn = nil
 end
-
--- Toggle bomb button
 bombButton.MouseButton1Click:Connect(function()
 	bombEnabled = not bombEnabled
 	if bombEnabled then
@@ -121,5 +128,192 @@ bombButton.MouseButton1Click:Connect(function()
 		bombButton.Text = "BOMB OFF"
 		bombButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 		stopBombSpam()
+	end
+end)
+
+-- Farm spam (purchase calls)
+local function startFarm()
+	if farmConn then farmConn:Disconnect() end
+	local purchaseRemote = ReplicatedStorage:WaitForChild("PurchaseButton")
+	farmConn = RunService.Heartbeat:Connect(function()
+		if farmEnabled then
+			purchaseRemote:FireServer(3, 9999999, -99999999)
+			purchaseRemote:FireServer(1, 99999999, -9999999)
+		end
+	end)
+end
+local function stopFarm()
+	if farmConn then farmConn:Disconnect() end
+	farmConn = nil
+end
+farmButton.MouseButton1Click:Connect(function()
+	farmEnabled = not farmEnabled
+	if farmEnabled then
+		farmButton.Text = "FARM ON"
+		farmButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		startFarm()
+	else
+		farmButton.Text = "FARM OFF"
+		farmButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+		stopFarm()
+	end
+end)-- LocalScript: Teleport + Reset loop with ON/OFF GUI button (Mobile)
+-- Plus Bomb spam + Purchase farm button
+-- Place in StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local lp = Players.LocalPlayer
+local PlayerGui = lp:WaitForChild("PlayerGui")
+
+-- CONFIG
+local TARGET_POS = Vector3.new(249, -4, -13)
+local RESET_DELAY = 0.05
+
+-- State
+local tpEnabled = false
+local bombEnabled = false
+local farmEnabled = false
+local bombConn
+local farmConn
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+-- Teleport button
+local tpButton = Instance.new("TextButton")
+tpButton.Size = UDim2.new(0, 100, 0, 40)
+tpButton.Position = UDim2.new(0.05, 0, 0.65, 0) -- higher
+tpButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpButton.TextScaled = true
+tpButton.Text = "TP OFF"
+tpButton.Parent = screenGui
+
+-- Bomb button
+local bombButton = Instance.new("TextButton")
+bombButton.Size = UDim2.new(0, 100, 0, 40)
+bombButton.Position = UDim2.new(0.05, 0, 0.75, 0)
+bombButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+bombButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+bombButton.TextScaled = true
+bombButton.Text = "BOMB OFF"
+bombButton.Parent = screenGui
+
+-- Farm button
+local farmButton = Instance.new("TextButton")
+farmButton.Size = UDim2.new(0, 100, 0, 40)
+farmButton.Position = UDim2.new(0.05, 0, 0.85, 0)
+farmButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+farmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+farmButton.TextScaled = true
+farmButton.Text = "FARM OFF"
+farmButton.Parent = screenGui
+
+-- Teleport to target
+local function teleport(character)
+	local hrp = character:WaitForChild("HumanoidRootPart", 10)
+	if hrp then
+		hrp.CFrame = CFrame.new(TARGET_POS)
+	end
+end
+
+-- Teleport + reset cycle
+local function doCycle(character)
+	if not tpEnabled then return end
+
+	teleport(character)
+	task.wait(RESET_DELAY)
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid and tpEnabled then
+		humanoid.Health = 0
+	end
+end
+
+-- Run cycle every spawn
+lp.CharacterAdded:Connect(function(char)
+	task.defer(function()
+		doCycle(char)
+	end)
+end)
+
+if lp.Character then
+	task.defer(function()
+		doCycle(lp.Character)
+	end)
+end
+
+-- Toggle teleport button
+tpButton.MouseButton1Click:Connect(function()
+	tpEnabled = not tpEnabled
+	if tpEnabled then
+		tpButton.Text = "TP ON"
+		tpButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		if lp.Character then
+			doCycle(lp.Character)
+		end
+	else
+		tpButton.Text = "TP OFF"
+		tpButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+	end
+end)
+
+-- Bomb spam
+local function startBombSpam()
+	if bombConn then bombConn:Disconnect() end
+	local bombRemote = ReplicatedStorage:WaitForChild("PlantBomb")
+	bombConn = RunService.Heartbeat:Connect(function()
+		if bombEnabled then
+			bombRemote:FireServer()
+		end
+	end)
+end
+local function stopBombSpam()
+	if bombConn then bombConn:Disconnect() end
+	bombConn = nil
+end
+bombButton.MouseButton1Click:Connect(function()
+	bombEnabled = not bombEnabled
+	if bombEnabled then
+		bombButton.Text = "BOMB ON"
+		bombButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		startBombSpam()
+	else
+		bombButton.Text = "BOMB OFF"
+		bombButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+		stopBombSpam()
+	end
+end)
+
+-- Farm spam (purchase calls)
+local function startFarm()
+	if farmConn then farmConn:Disconnect() end
+	local purchaseRemote = ReplicatedStorage:WaitForChild("PurchaseButton")
+	farmConn = RunService.Heartbeat:Connect(function()
+		if farmEnabled then
+			purchaseRemote:FireServer(3, 9999999, -99999999)
+			purchaseRemote:FireServer(1, 99999999, -9999999)
+		end
+	end)
+end
+local function stopFarm()
+	if farmConn then farmConn:Disconnect() end
+	farmConn = nil
+end
+farmButton.MouseButton1Click:Connect(function()
+	farmEnabled = not farmEnabled
+	if farmEnabled then
+		farmButton.Text = "FARM ON"
+		farmButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+		startFarm()
+	else
+		farmButton.Text = "FARM OFF"
+		farmButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+		stopFarm()
 	end
 end)
